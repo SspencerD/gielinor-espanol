@@ -1,6 +1,9 @@
 package com.sspencerd.gielinorespanol.translation;
 
+import com.sspencerd.gielinorespanol.util.TextNormalizer;
+
 import java.util.Map;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
@@ -19,7 +22,10 @@ public class TranslationService
             Map.entry("Close", "Cerrar"),
             Map.entry("Search", "Buscar"),
             Map.entry("Take", "Tomar"),
-            Map.entry("Drop", "Soltar")
+            Map.entry("Drop", "Soltar"),
+            Map.entry("Operate","Operar"),
+            Map.entry("Deposit","Depositar"),
+            Map.entry("Climb-up","Subir")
     );
 
     private static final Map<String, String> MENU_TARGET_TRANSLATIONS = Map.ofEntries(
@@ -29,9 +35,20 @@ public class TranslationService
             Map.entry("Banker","Banquero"),
             Map.entry("Door","Puerta"),
             Map.entry("Ladder","Escalera"),
-            Map.entry("Stairs","Escaleras")
+            Map.entry("Stairs","Escaleras"),
+            Map.entry("Staircase","Escalera"),
+            Map.entry("Hopper","Tolva"),
+            Map.entry("Refine","Refinar")
     );
 
+    private final TextNormalizer textNormalizer;
+
+@Inject
+public TranslationService(TextNormalizer textNormalizer)
+{
+    this.textNormalizer = textNormalizer;
+
+}
 
     public String translateMenuOption(String option)
     {
@@ -50,7 +67,7 @@ public class TranslationService
             return target;
         }
 
-        String cleanTarget = removeColorTags(target);
+        String cleanTarget = textNormalizer.removeColorTags(target);
         String translatedTarget = MENU_TARGET_TRANSLATIONS.get(cleanTarget);
 
         if (translatedTarget == null)
@@ -58,14 +75,11 @@ public class TranslationService
             return target;
         }
 
-        return target.replace(cleanTarget, translatedTarget);
-    }
-
-    private String removeColorTags(String text)
-    {
-        return text
-                .replaceAll("<col=[0-9a-fA-F]+>","")
-                .replace("</col>","");
+       return textNormalizer.replacePreservingOriginalFormat(
+               target,
+               cleanTarget,
+               translatedTarget
+       );
     }
 
 }

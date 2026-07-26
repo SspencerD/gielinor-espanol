@@ -52,32 +52,42 @@ public class GielinorEspanolPlugin extends Plugin
 	{
 		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
 		{
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Example says " + config.greeting(), null);
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Gelinor en español está activado " + config.translateMenuOptions(), null);
 		}
 	}
 
     @Subscribe
     public void onMenuOpened(MenuOpened event)
     {
-        for (MenuEntry entry : event.getMenuEntries())
-        {
-            menuInspector.inspect(entry);
-
-			String originalOption = entry.getOption();
-			String translatedOption = translationService.translateMenuOption(originalOption);
-
-			if(!originalOption.equals(translatedOption))
+		for (MenuEntry entry : event.getMenuEntries())
+		{
+			if (config.menuInspectorEnabled())
 			{
-				entry.setOption(translatedOption);
+				menuInspector.inspect(entry);
 			}
-			String originalTarget = entry.getTarget();
-			String translatedTarget = translationService.translateMenuTarget(originalTarget);
 
-			if(!originalTarget.equals(translatedTarget))
+			if (config.translateMenuOptions())
 			{
-				entry.setTarget(translatedTarget);
+				String originalOption = entry.getOption();
+				String translatedOption = translationService.translateMenuOption(originalOption);
+
+				if (!originalOption.equals(translatedOption))
+				{
+					entry.setOption(translatedOption);
+				}
 			}
-        }
+
+			if (config.translateMenuTargets())
+			{
+				String originalTarget = entry.getTarget();
+				String translatedTarget = translationService.translateMenuTarget(originalTarget);
+
+				if (!originalTarget.equals(translatedTarget))
+				{
+					entry.setTarget(translatedTarget);
+				}
+			}
+		}
     }
 
 	@Provides
