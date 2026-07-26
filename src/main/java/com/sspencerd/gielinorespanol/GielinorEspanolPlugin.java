@@ -1,5 +1,6 @@
 package com.sspencerd.gielinorespanol;
 
+import com.sspencerd.gielinorespanol.capture.MissingTranslationCollector;
 import com.sspencerd.gielinorespanol.menu.MenuInspector;
 import com.sspencerd.gielinorespanol.translation.TranslationService;
 import net.runelite.api.*;
@@ -35,6 +36,9 @@ public class GielinorEspanolPlugin extends Plugin
 	@Inject
 	private TranslationService translationService;
 
+	@Inject
+	private MissingTranslationCollector missingTranslationCollector;
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -69,6 +73,12 @@ public class GielinorEspanolPlugin extends Plugin
 			if (config.translateMenuOptions())
 			{
 				String originalOption = entry.getOption();
+
+				if(!translationService.hasMenuOptionTranslation(originalOption))
+				{
+					missingTranslationCollector.collectMenuOption(originalOption);
+				}
+
 				String translatedOption = translationService.translateMenuOption(originalOption);
 
 				if (!originalOption.equals(translatedOption))
@@ -80,6 +90,12 @@ public class GielinorEspanolPlugin extends Plugin
 			if (config.translateMenuTargets())
 			{
 				String originalTarget = entry.getTarget();
+
+				if(!translationService.hasMenuOptionTranslation(originalTarget))
+				{
+					missingTranslationCollector.collectMenuTarget(originalTarget);
+				}
+
 				String translatedTarget = translationService.translateMenuTarget(originalTarget);
 
 				if (!originalTarget.equals(translatedTarget))

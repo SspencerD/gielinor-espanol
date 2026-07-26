@@ -60,4 +60,23 @@ public class TranslationService
        );
     }
 
+    public boolean hasMenuOptionTranslation(String option)
+    {
+        if(option == null || option.isBlank())
+        {
+            return true;
+        }
+        return menuOptionTranslations.containsKey(option);
+    }
+
+    public boolean hasMenuTargetTranslation(String target)
+    {
+        if(target == null || target.isBlank())
+        {
+            return true;
+        }
+        String cleanTarget = textNormalizer.removeColorTags(target);
+        return menuTargetTranslations.containsKey(cleanTarget);
+    }
+
 }
