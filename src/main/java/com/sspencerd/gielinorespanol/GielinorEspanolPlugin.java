@@ -63,7 +63,7 @@ public class GielinorEspanolPlugin extends Plugin
 
 		if (
 				config.captureMissingTranslations() &&
-						!translationService.hasMenuOptionTranslation(originalOption)
+						!translationService.hasMenuTargetTranslation(entry)
 		)
 		{
 			missingTranslationCollector.collectMenuOption(originalOption);
@@ -77,10 +77,14 @@ public class GielinorEspanolPlugin extends Plugin
 
 		if (
 				config.captureMissingTranslations() &&
-						!translationService.hasMenuTargetTranslation(originalTarget)
+						!translationService.hasMenuTargetTranslation(entry)
 		)
 		{
-			missingTranslationCollector.collectMenuTarget(originalTarget);
+			missingTranslationCollector.collectMenuTarget(
+					"menuTarget",
+					originalTarget,
+					entry
+			);
 			missingTranslationCollector.collectMenuEntry(
 					"menuTarget",
 					originalOption,
@@ -101,7 +105,7 @@ public class GielinorEspanolPlugin extends Plugin
 
 		if (config.translateMenuTargets())
 		{
-			String translatedTarget = translationService.translateMenuTarget(originalTarget);
+			String translatedTarget = translationService.translateMenuTarget(entry);
 
 			if (!originalTarget.equals(translatedTarget))
 			{

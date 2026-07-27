@@ -3,6 +3,7 @@ package com.sspencerd.gielinorespanol.capture;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sspencerd.gielinorespanol.model.MissingMenuEntry;
+import com.sspencerd.gielinorespanol.model.MissingTranslationCategory;
 import com.sspencerd.gielinorespanol.util.TextNormalizer;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.MenuEntry;
@@ -35,16 +36,26 @@ public class MissingTranslationCollector
             .resolve("missing-menu-translations.json");
 
     private final TextNormalizer textNormalizer;
+    private final MissingTranslationClassifier missingTranslationClassifier;
 
     private final Set<String> missingMenuOptions = new LinkedHashSet<>();
-    private final Set<String> missingMenuTargets = new LinkedHashSet<>();
+    private final Set<String> missingObjects = new LinkedHashSet<>();
+    private final Set<String> missingNpcs = new LinkedHashSet<>();
+    private final Set<String> missingItems = new LinkedHashSet<>();
+    private final Set<String> missingWidgets = new LinkedHashSet<>();
+    private final Set<String> missingUnknown = new LinkedHashSet<>();
+
     private final Set<String> missingMenuEntryKeys = new LinkedHashSet<>();
     private final Set<MissingMenuEntry> missingMenuEntries = new LinkedHashSet<>();
 
     @Inject
-    public MissingTranslationCollector(TextNormalizer textNormalizer)
+    public MissingTranslationCollector(
+            TextNormalizer textNormalizer,
+            MissingTranslationClassifier missingTranslationClassifier
+    )
     {
         this.textNormalizer = textNormalizer;
+        this.missingTranslationClassifier = missingTranslationClassifier;
         loadExistingMissingTranslations();
 
         log.info("Missing translations will be saved at: {}", MISSING_FILE);
@@ -63,7 +74,7 @@ public class MissingTranslationCollector
         }
     }
 
-    public synchronized void collectMenuTarget(String target)
+    public synchronized void collectMenuTarget(String source, String target,MenuEntry entry)
     {
         if (target == null || target.isBlank())
         {
@@ -76,8 +87,9 @@ public class MissingTranslationCollector
         {
             return;
         }
+        MissingTranslationCategory category =  missingTranslationClassifier.classify(source,entry);
 
-        if (missingMenuTargets.add(cleanTarget))
+        if (addMissingTargetToCategory(category,cleanTarget))
         {
             save();
         }
@@ -95,12 +107,14 @@ public class MissingTranslationCollector
             return;
             }
 
-        String cleanTarget = textNormalizer.removeColorTags(entry.getTarget());
+        String cleanTarget = textNormalizer.removeColorTags(target);
 
         if(cleanTarget == null)
         {
             cleanTarget = "";
         }
+        MissingTranslationCategory category =  missingTranslationClassifier.classify(source,entry);
+
         String key = source
                 + "|"
                 + entry.getOption()
@@ -118,16 +132,37 @@ public class MissingTranslationCollector
 
         missingMenuEntries.add(new MissingMenuEntry(
                 source,
+                category.name(),
                 option,
                 cleanTarget,
                 entry.getType() != null ? entry.getType().name() : "",
                 entry.getIdentifier(),
                 entry.getParam0(),
                 entry.getParam1()
-
         ));
 
         save();
+    }
+
+    private boolean addMissingTargetToCategory(
+            MissingTranslationCategory category,
+            String cleanTarget
+    )
+    {
+        switch (category)
+        {
+            case OBJECT:
+                return missingObjects.add(cleanTarget);
+            case NPC:
+                return missingNpcs.add(cleanTarget);
+            case ITEM:
+                return missingItems.add(cleanTarget);
+            case WIDGET:
+                return missingWidgets.add(cleanTarget);
+            case UNKNOWN:
+            default:
+                return missingUnknown.add(cleanTarget);
+        }
     }
 
     private void loadExistingMissingTranslations()
@@ -150,10 +185,27 @@ public class MissingTranslationCollector
             {
                 missingMenuOptions.addAll(data.menuOptions);
             }
+            if(data.objects != null){
+                missingObjects.addAll(data.objects);
+            }
 
-            if (data.menuTargets != null)
+            if(data.npcs != null)
             {
-                missingMenuTargets.addAll(data.menuTargets);
+                missingNpcs.addAll(data.npcs);
+            }
+
+            if(data.items != null)
+            {
+                missingItems.addAll(data.items);
+            }
+            if(data.widgets != null)
+            {
+                missingItems.addAll(data.widgets);
+            }
+
+            if(data.unknown != null)
+            {
+                missingUnknown.addAll(data.unknown);
             }
             if (data.menuEntries != null)
             {
@@ -162,6 +214,8 @@ public class MissingTranslationCollector
                     missingMenuEntries.add(menuEntry);
 
                     String key = menuEntry.getSource()
+                            + "|"
+                            + menuEntry.getCategory()
                             + "|"
                             + menuEntry.getOption()
                             + "|"
@@ -189,7 +243,11 @@ public class MissingTranslationCollector
 
             MissingTranslationsData data = new MissingTranslationsData();
             data.menuOptions = missingMenuOptions;
-            data.menuTargets = missingMenuTargets;
+            data.objects = missingObjects;
+            data.npcs = missingNpcs;
+            data.items = missingItems;
+            data.widgets = missingWidgets;
+            data.unknown = missingUnknown;
             data.menuEntries = missingMenuEntries;
 
             try (Writer writer = Files.newBufferedWriter(MISSING_FILE, StandardCharsets.UTF_8))
@@ -206,7 +264,11 @@ public class MissingTranslationCollector
     private static class MissingTranslationsData
     {
         private Set<String> menuOptions = new LinkedHashSet<>();
-        private Set<String> menuTargets = new LinkedHashSet<>();
+        private Set<String> objects = new LinkedHashSet<>();
+        private Set<String> npcs = new LinkedHashSet<>();
+        private Set<String> items = new LinkedHashSet<>();
+        private Set<String> widgets = new LinkedHashSet<>();
+        private Set<String> unknown = new LinkedHashSet<>();
         private Set<MissingMenuEntry> menuEntries = new LinkedHashSet<>();
     }
 }

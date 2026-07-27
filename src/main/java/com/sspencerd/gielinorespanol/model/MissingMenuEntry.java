@@ -1,8 +1,12 @@
 package com.sspencerd.gielinorespanol.model;
 
+import lombok.Getter;
+
 public class MissingMenuEntry {
 
+    @Getter
     private String source;
+    private String category;
     private String option;
     private String target;
     private String type;
@@ -12,6 +16,7 @@ public class MissingMenuEntry {
 
     public MissingMenuEntry(
             String source,
+            String category,
             String option,
             String target,
             String type,
@@ -21,6 +26,7 @@ public class MissingMenuEntry {
     )
     {
         this.source = source;
+        this.category = category;
         this.option = option;
         this.target = target;
         this.type = type;
@@ -28,8 +34,9 @@ public class MissingMenuEntry {
         this.param0 = param0;
         this.param1 = param1;
     }
-    public String getSource() {
-        return source;
+
+    public String getCategory() {
+        return category;
     }
     public String getOption() {
         return option;
