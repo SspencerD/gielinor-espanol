@@ -3,7 +3,6 @@ package com.sspencerd.gielinorespanol;
 import com.sspencerd.gielinorespanol.capture.MissingTranslationCollector;
 import com.sspencerd.gielinorespanol.menu.MenuInspector;
 import com.sspencerd.gielinorespanol.translation.TranslationService;
-import com.sspencerd.gielinorespanol.menu.MenuTooltipOverlay;
 
 import net.runelite.api.*;
 import net.runelite.api.events.MenuOpened;
@@ -13,10 +12,8 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.api.events.MenuEntryAdded;
 
 @Slf4j
