@@ -35,4 +35,23 @@ public interface GielinorEspanolConfig extends Config
 	{
 		return false;
 	}
+	@ConfigItem(
+			keyName = "captureMissingTranslations",
+			name = "(analitica) Capturar traducciones faltantes",
+			description = "Guarda opciones y objetivos del menú sin traducción en un archivo JSON local"
+	)
+	default boolean captureMissingTranslations()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+			keyName = "translateHoverTooltip",
+			name = "Traducir tooltip hover",
+			description = "Muestra un tooltip traducido al pasar el mouse sobre acciones u objetos"
+	)
+	default boolean translateHoverTooltip()
+	{
+		return true;
+	}
 }

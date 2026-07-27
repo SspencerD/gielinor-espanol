@@ -3,6 +3,8 @@ package com.sspencerd.gielinorespanol;
 import com.sspencerd.gielinorespanol.capture.MissingTranslationCollector;
 import com.sspencerd.gielinorespanol.menu.MenuInspector;
 import com.sspencerd.gielinorespanol.translation.TranslationService;
+import com.sspencerd.gielinorespanol.menu.MenuTooltipOverlay;
+
 import net.runelite.api.*;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.client.eventbus.Subscribe;
@@ -14,6 +16,8 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.api.events.MenuEntryAdded;
 
 @Slf4j
 @PluginDescriptor(
@@ -39,16 +43,76 @@ public class GielinorEspanolPlugin extends Plugin
 	@Inject
 	private MissingTranslationCollector missingTranslationCollector;
 
+//	@Inject
+//	private OverlayManager overlayManager;
+//
+//	@Inject
+//	private MenuTooltipOverlay menuTooltipOverlay;
+
+	private void translateMenuEntry(MenuEntry entry)
+	{
+		if(entry == null)
+		{
+			return;
+		}
+		if(config.menuInspectorEnabled())
+		{
+			menuInspector.inspect(entry);
+		}
+
+		if(config.translateMenuOptions())
+		{
+			String originalOption = entry.getOption();
+
+			if(config.captureMissingTranslations() &&
+			!translationService.hasMenuOptionTranslation(originalOption))
+			{
+				missingTranslationCollector.collectMenuOption(originalOption);
+			}
+
+			String translatedOption = translationService.translateMenuOption(originalOption);
+
+			if(!originalOption.equals(translatedOption))
+			{
+				entry.setOption(translatedOption);
+			}
+		}
+
+		if(config.translateMenuTargets())
+		{
+			String originalTarget = entry.getTarget();
+
+			if(config.captureMissingTranslations() && !translationService.hasMenuTargetTranslation(originalTarget))
+			{
+				missingTranslationCollector.collectMenuTarget(originalTarget);
+			}
+
+			String translatedTarget = translationService.translateMenuTarget(originalTarget);
+
+			if(!originalTarget.equals(translatedTarget)){
+				entry.setTarget(translatedTarget);
+			}
+		}
+	}
+
 	@Override
 	protected void startUp() throws Exception
 	{
 		log.debug("Example started!");
+		// overlayManager.add(menuTooltipOverlay);
 	}
-
 	@Override
 	protected void shutDown() throws Exception
 	{
 		log.debug("Example stopped!");
+		// overlayManager.remove(menuTooltipOverlay);
+	}
+
+	@Subscribe
+	public void onMenuEntryAdded(MenuEntryAdded event)
+	{
+		MenuEntry entry = event.getMenuEntry();
+		translateMenuEntry(entry);
 	}
 
 	@Subscribe
@@ -65,44 +129,7 @@ public class GielinorEspanolPlugin extends Plugin
     {
 		for (MenuEntry entry : event.getMenuEntries())
 		{
-			if (config.menuInspectorEnabled())
-			{
-				menuInspector.inspect(entry);
-			}
-
-			if (config.translateMenuOptions())
-			{
-				String originalOption = entry.getOption();
-
-				if(!translationService.hasMenuOptionTranslation(originalOption))
-				{
-					missingTranslationCollector.collectMenuOption(originalOption);
-				}
-
-				String translatedOption = translationService.translateMenuOption(originalOption);
-
-				if (!originalOption.equals(translatedOption))
-				{
-					entry.setOption(translatedOption);
-				}
-			}
-
-			if (config.translateMenuTargets())
-			{
-				String originalTarget = entry.getTarget();
-
-				if(!translationService.hasMenuOptionTranslation(originalTarget))
-				{
-					missingTranslationCollector.collectMenuTarget(originalTarget);
-				}
-
-				String translatedTarget = translationService.translateMenuTarget(originalTarget);
-
-				if (!originalTarget.equals(translatedTarget))
-				{
-					entry.setTarget(translatedTarget);
-				}
-			}
+			translateMenuEntry(entry);
 		}
     }
 

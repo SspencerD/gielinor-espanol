@@ -79,4 +79,16 @@ public class TranslationService
         return menuTargetTranslations.containsKey(cleanTarget);
     }
 
+    public String translateMenuEntry(String option, String target)
+    {
+        String translatedOption = translateMenuOption(option);
+        String translatedTarget = translateMenuTarget(target);
+
+        if(translatedTarget == null || translatedTarget.isBlank())
+        {
+            return translatedOption;
+        }
+        return translatedOption + " " + translatedTarget;
+    }
+
 }
