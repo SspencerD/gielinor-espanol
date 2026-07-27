@@ -48,45 +48,63 @@ public class GielinorEspanolPlugin extends Plugin
 
 	private void translateMenuEntry(MenuEntry entry)
 	{
-		if(entry == null)
+		if (entry == null)
 		{
 			return;
 		}
-		if(config.menuInspectorEnabled())
+
+		String originalOption = entry.getOption();
+		String originalTarget = entry.getTarget();
+
+		if (config.menuInspectorEnabled())
 		{
 			menuInspector.inspect(entry);
 		}
 
-		if(config.translateMenuOptions())
+		if (
+				config.captureMissingTranslations() &&
+						!translationService.hasMenuOptionTranslation(originalOption)
+		)
 		{
-			String originalOption = entry.getOption();
+			missingTranslationCollector.collectMenuOption(originalOption);
+			missingTranslationCollector.collectMenuEntry(
+					"menuOption",
+					originalOption,
+					originalTarget,
+					entry
+			);
+		}
 
-			if(config.captureMissingTranslations() &&
-			!translationService.hasMenuOptionTranslation(originalOption))
-			{
-				missingTranslationCollector.collectMenuOption(originalOption);
-			}
+		if (
+				config.captureMissingTranslations() &&
+						!translationService.hasMenuTargetTranslation(originalTarget)
+		)
+		{
+			missingTranslationCollector.collectMenuTarget(originalTarget);
+			missingTranslationCollector.collectMenuEntry(
+					"menuTarget",
+					originalOption,
+					originalTarget,
+					entry
+			);
+		}
 
+		if (config.translateMenuOptions())
+		{
 			String translatedOption = translationService.translateMenuOption(originalOption);
 
-			if(!originalOption.equals(translatedOption))
+			if (!originalOption.equals(translatedOption))
 			{
 				entry.setOption(translatedOption);
 			}
 		}
 
-		if(config.translateMenuTargets())
+		if (config.translateMenuTargets())
 		{
-			String originalTarget = entry.getTarget();
-
-			if(config.captureMissingTranslations() && !translationService.hasMenuTargetTranslation(originalTarget))
-			{
-				missingTranslationCollector.collectMenuTarget(originalTarget);
-			}
-
 			String translatedTarget = translationService.translateMenuTarget(originalTarget);
 
-			if(!originalTarget.equals(translatedTarget)){
+			if (!originalTarget.equals(translatedTarget))
+			{
 				entry.setTarget(translatedTarget);
 			}
 		}
@@ -109,6 +127,7 @@ public class GielinorEspanolPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		MenuEntry entry = event.getMenuEntry();
+
 		translateMenuEntry(entry);
 	}
 
@@ -124,9 +143,13 @@ public class GielinorEspanolPlugin extends Plugin
     @Subscribe
     public void onMenuOpened(MenuOpened event)
     {
+		if(!config.menuInspectorEnabled())
+		{
+			return;
+		}
 		for (MenuEntry entry : event.getMenuEntries())
 		{
-			translateMenuEntry(entry);
+			menuInspector.inspect(entry);
 		}
     }
 
