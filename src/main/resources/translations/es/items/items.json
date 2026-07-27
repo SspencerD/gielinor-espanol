@@ -59,11 +59,23 @@
   "Loop half of key": "Media llave con lazo",
   "Lockpick": "Ganzúa",
   "Scroll box (medium)": "Caja de pergamino (Media)",
+  "Scroll box (easy)": "Caja de pergamino (Facíl)",
+  "Scroll box (beginner)": "Caja de pergamino (Principiante)",
+  "Scroll box (master)": "Caja de pergamino (Maestro)",
   "Lit bug lantern": "Linterna de bichos encendida",
   "Silly jester top": "Camiseta de bufón",
   "Reward casket (elite)": "Cofre de recompensa (élite)",
   "Sunfire splinters": "Astillas de fuego solar",
   "Beekeeper's top": "Camiseta de apicultor",
   "Fishbowl and net": "Pecera y red",
-  "Ecto-token": "Ficha-ecto"
+  "Ecto-token": "Ficha-ecto",
+  "Ardougne cloak 1": "Capa de Ardougne 1",
+  "Ardougne cloak 2": "Capa de Ardougne 2",
+  "Ardougne cloak 3": "Capa de Ardougne 3",
+  "Ardougne cloak 4": "Capa de Ardougne 4",
+  "Lit candle": "Vela encendida",
+  "Cattleprod": "Picana",
+  "Boots of stone": "Botas de piedra",
+  "Earmuffs": "Orejeras"
+
 }

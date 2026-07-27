@@ -1,6 +1,10 @@
 package com.sspencerd.gielinorespanol.translation;
 
+
+import com.sspencerd.gielinorespanol.model.CombatLevelTarget;
+import com.sspencerd.gielinorespanol.util.CombatLevelTargetNormalizer;
 import com.sspencerd.gielinorespanol.util.TextNormalizer;
+import com.sspencerd.gielinorespanol.util.WidgetIdUtil;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 
@@ -12,6 +16,7 @@ import java.util.Map;
 public class TranslationService
 {
     private final TextNormalizer textNormalizer;
+    private final CombatLevelTargetNormalizer combatLevelTargetNormalizer;
 
     private final Map<String, String> menuOptionTranslations;
     private final Map<String, String> menuTargetTranslations;
@@ -20,13 +25,26 @@ public class TranslationService
     private final Map<String, String> itemTranslations;
     private final Map<String, String> widgetTranslations;
 
+
+    private static final int BANK_GROUP_ID = 12;
+    private static final int INVENTORY_GROUP_ID = 149;
+    private static final int DEPOSIT_BOX_GROUP_ID = 192;
+    private static final int SHOP_GROUP_ID = 300;
+    private static final int EQUIPMENT_GROUP_ID = 387;
+
+    private final WidgetIdUtil widgetIdUtil;
+
+
     @Inject
     public TranslationService(
             TextNormalizer textNormalizer,
-            TranslationRepository translationRepository
+            TranslationRepository translationRepository,
+            CombatLevelTargetNormalizer combatLevelTargetNormalizer, WidgetIdUtil widgetIdUtil
     )
     {
         this.textNormalizer = textNormalizer;
+        this.combatLevelTargetNormalizer = combatLevelTargetNormalizer;
+        this.widgetIdUtil = widgetIdUtil;
 
         this.menuOptionTranslations = translationRepository.loadTranslations(
                 "/translations/es/menu/options.json"
@@ -46,6 +64,7 @@ public class TranslationService
         this.widgetTranslations = translationRepository.loadTranslations(
                 "/translations/es/widgets/widgets.json"
         );
+
     }
 
     public String translateMenuOption(String option)
@@ -138,6 +157,28 @@ public class TranslationService
 
         Map<String, String> specificTranslations = getTargetDictionary(entry);
 
+        CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
+
+        if (combatLevelTarget.hasCombatLevel())
+        {
+            String translatedName = specificTranslations.get(combatLevelTarget.getName());
+
+            if (translatedName == null)
+            {
+                translatedName = menuTargetTranslations.get(combatLevelTarget.getName());
+            }
+
+            if (translatedName == null)
+            {
+                return null;
+            }
+
+            return combatLevelTargetNormalizer.buildTranslatedTarget(
+                    translatedName,
+                    combatLevelTarget.getLevel()
+            );
+        }
+
         String translatedTarget = specificTranslations.get(cleanTarget);
 
         if (translatedTarget != null)
@@ -186,10 +227,27 @@ public class TranslationService
             case CC_OP:
             case CC_OP_LOW_PRIORITY:
             case WIDGET_TARGET:
-                return widgetTranslations;
+                return isItemWidget(entry) ? itemTranslations : widgetTranslations;
 
             default:
                 return menuTargetTranslations;
+        }
+    }
+    private boolean isItemWidget(MenuEntry entry)
+    {
+        int groupId = widgetIdUtil.getGroupId(entry.getParam1());
+
+        switch (groupId)
+        {
+            case BANK_GROUP_ID:
+            case INVENTORY_GROUP_ID:
+            case DEPOSIT_BOX_GROUP_ID:
+            case SHOP_GROUP_ID:
+            case EQUIPMENT_GROUP_ID:
+                return true;
+
+            default:
+                return false;
         }
     }
 }

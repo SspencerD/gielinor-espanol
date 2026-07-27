@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.sspencerd.gielinorespanol.model.MissingMenuEntry;
 import com.sspencerd.gielinorespanol.model.MissingTranslationCategory;
 import com.sspencerd.gielinorespanol.util.TextNormalizer;
+import com.sspencerd.gielinorespanol.model.CombatLevelTarget;
+import com.sspencerd.gielinorespanol.util.CombatLevelTargetNormalizer;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.MenuEntry;
 import net.runelite.client.RuneLite;
@@ -23,6 +25,8 @@ import java.util.Set;
 @Singleton
 public class MissingTranslationCollector
 {
+    private final CombatLevelTargetNormalizer combatLevelTargetNormalizer;
+
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
             .disableHtmlEscaping()
@@ -51,11 +55,13 @@ public class MissingTranslationCollector
     @Inject
     public MissingTranslationCollector(
             TextNormalizer textNormalizer,
-            MissingTranslationClassifier missingTranslationClassifier
+            MissingTranslationClassifier missingTranslationClassifier,
+            CombatLevelTargetNormalizer combatLevelTargetNormalizer
     )
     {
         this.textNormalizer = textNormalizer;
         this.missingTranslationClassifier = missingTranslationClassifier;
+        this.combatLevelTargetNormalizer = combatLevelTargetNormalizer;
         loadExistingMissingTranslations();
 
         log.info("Missing translations will be saved at: {}", MISSING_FILE);
@@ -87,6 +93,12 @@ public class MissingTranslationCollector
         {
             return;
         }
+        CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
+
+        if(combatLevelTarget.hasCombatLevel()){
+            cleanTarget = combatLevelTarget.getName();
+        }
+
         MissingTranslationCategory category =  missingTranslationClassifier.classify(source,entry);
 
         if (addMissingTargetToCategory(category,cleanTarget))
@@ -112,6 +124,12 @@ public class MissingTranslationCollector
         if(cleanTarget == null)
         {
             cleanTarget = "";
+        }
+
+        CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
+
+        if(combatLevelTarget.hasCombatLevel()){
+            cleanTarget = combatLevelTarget.getName();
         }
         MissingTranslationCategory category =  missingTranslationClassifier.classify(source,entry);
 
