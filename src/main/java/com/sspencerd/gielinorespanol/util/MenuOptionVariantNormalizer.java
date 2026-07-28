@@ -5,8 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Singleton
-public class MenuOptionVariantNormalizer {
-
+public class MenuOptionVariantNormalizer
+{
     private static final Pattern DYNAMIC_OPTION_PATTERN = Pattern.compile(
             "^(Withdraw|Deposit|Buy|Sell)-(.+)$",
             Pattern.CASE_INSENSITIVE
@@ -19,41 +19,65 @@ public class MenuOptionVariantNormalizer {
 
     public String translateDynamicOption(String option)
     {
-        if(option == null || option.isBlank())
+        if (option == null || option.isBlank())
         {
             return option;
         }
 
         Matcher matcher = DYNAMIC_OPTION_PATTERN.matcher(option.trim());
 
-    if(!matcher.matches())
-    {
-        return option;
+        if (!matcher.matches())
+        {
+            return option;
+        }
+
+        String action = matcher.group(1);
+        String suffix = matcher.group(2);
+
+        return translateAction(action) + translateSuffix(suffix);
     }
 
-    String action = matcher.group(1);
-    String suffix = matcher.group(2);
-
-    return translateAction(action) + "-" + suffix;
-
-    }
-
-
-    private  String translateAction(String action)
+    private String translateAction(String action)
     {
-        switch(action.toLowerCase())
+        switch (action.toLowerCase())
         {
             case "withdraw":
                 return "Retirar";
+
             case "deposit":
                 return "Depositar";
+
             case "buy":
                 return "Comprar";
+
             case "sell":
                 return "Vender";
+
             default:
                 return action;
         }
     }
 
+    private String translateSuffix(String suffix)
+    {
+        if (suffix == null || suffix.isBlank())
+        {
+            return "";
+        }
+
+        switch (suffix.toLowerCase())
+        {
+            case "all":
+                return " todo";
+
+            case "x":
+                return " X";
+
+            case "all-but-1":
+                return " todo menos 1";
+
+            default:
+                return " " + suffix;
+        }
+    }
 }
