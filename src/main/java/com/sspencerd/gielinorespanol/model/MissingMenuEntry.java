@@ -47,7 +47,7 @@ public class MissingMenuEntry {
     public String getType() {
         return type;
     }
-    public int getIndentifier() {
+    public int getIdentifier() {
         return identifier;
     }
     public int getParam0() {

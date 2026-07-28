@@ -50,6 +50,15 @@ public interface GielinorEspanolConfig extends Config
 			name = "Traducir tooltip hover",
 			description = "Muestra un tooltip traducido al pasar el mouse sobre acciones u objetos"
 	)
+	default boolean enableTranslateItemsAndNpcs()
+	{
+		return true;
+	}
+	@ConfigItem(
+			keyName = "translateItemsAndNpcs",
+			name = "Traducir los nombres de los npc e items",
+			description = "En esté caso si no prefieres traducir los items y npcs puedes dejarlo apagado"
+	)
 	default boolean translateHoverTooltip()
 	{
 		return true;

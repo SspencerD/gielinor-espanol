@@ -63,7 +63,7 @@ public class GielinorEspanolPlugin extends Plugin
 
 		if (
 				config.captureMissingTranslations() &&
-						!translationService.hasMenuTargetTranslation(entry)
+						!translationService.hasMenuOptionTranslation(originalOption)
 		)
 		{
 			missingTranslationCollector.collectMenuOption(originalOption);

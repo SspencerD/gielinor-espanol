@@ -1,8 +1,8 @@
 package com.sspencerd.gielinorespanol.translation;
 
-
 import com.sspencerd.gielinorespanol.model.CombatLevelTarget;
 import com.sspencerd.gielinorespanol.util.CombatLevelTargetNormalizer;
+import com.sspencerd.gielinorespanol.util.ItemVariantNormalizer;
 import com.sspencerd.gielinorespanol.util.TextNormalizer;
 import com.sspencerd.gielinorespanol.util.WidgetIdUtil;
 import net.runelite.api.MenuAction;
@@ -15,8 +15,16 @@ import java.util.Map;
 @Singleton
 public class TranslationService
 {
+    private static final int BANK_GROUP_ID = 12;
+    private static final int INVENTORY_GROUP_ID = 149;
+    private static final int DEPOSIT_BOX_GROUP_ID = 192;
+    private static final int SHOP_GROUP_ID = 300;
+    private static final int EQUIPMENT_GROUP_ID = 387;
+
     private final TextNormalizer textNormalizer;
     private final CombatLevelTargetNormalizer combatLevelTargetNormalizer;
+    private final ItemVariantNormalizer itemVariantNormalizer;
+    private final WidgetIdUtil widgetIdUtil;
 
     private final Map<String, String> menuOptionTranslations;
     private final Map<String, String> menuTargetTranslations;
@@ -25,26 +33,19 @@ public class TranslationService
     private final Map<String, String> itemTranslations;
     private final Map<String, String> widgetTranslations;
 
-
-    private static final int BANK_GROUP_ID = 12;
-    private static final int INVENTORY_GROUP_ID = 149;
-    private static final int DEPOSIT_BOX_GROUP_ID = 192;
-    private static final int SHOP_GROUP_ID = 300;
-    private static final int EQUIPMENT_GROUP_ID = 387;
-
-    private final WidgetIdUtil widgetIdUtil;
-
-
     @Inject
     public TranslationService(
             TextNormalizer textNormalizer,
             TranslationRepository translationRepository,
-            CombatLevelTargetNormalizer combatLevelTargetNormalizer, WidgetIdUtil widgetIdUtil
+            CombatLevelTargetNormalizer combatLevelTargetNormalizer,
+            WidgetIdUtil widgetIdUtil,
+            ItemVariantNormalizer itemVariantNormalizer
     )
     {
         this.textNormalizer = textNormalizer;
         this.combatLevelTargetNormalizer = combatLevelTargetNormalizer;
         this.widgetIdUtil = widgetIdUtil;
+        this.itemVariantNormalizer = itemVariantNormalizer;
 
         this.menuOptionTranslations = translationRepository.loadTranslations(
                 "/translations/es/menu/options.json"
@@ -64,7 +65,6 @@ public class TranslationService
         this.widgetTranslations = translationRepository.loadTranslations(
                 "/translations/es/widgets/widgets.json"
         );
-
     }
 
     public String translateMenuOption(String option)
@@ -92,6 +92,25 @@ public class TranslationService
         }
 
         String cleanTarget = textNormalizer.removeColorTags(target);
+
+        CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
+
+        if (combatLevelTarget.hasCombatLevel())
+        {
+            String translatedCombatTarget = translateCombatLevelTarget(
+                    entry,
+                    target,
+                    combatLevelTarget
+            );
+
+            if (translatedCombatTarget != null)
+            {
+                return translatedCombatTarget;
+            }
+
+            return target;
+        }
+
         String translatedTarget = findTargetTranslation(entry, cleanTarget);
 
         if (translatedTarget == null)
@@ -186,7 +205,64 @@ public class TranslationService
             return translatedTarget;
         }
 
+        if (specificTranslations == itemTranslations)
+        {
+            String translatedVariantTarget = findItemVariantTranslation(cleanTarget);
+
+            if (translatedVariantTarget != null)
+            {
+                return translatedVariantTarget;
+            }
+        }
+
         return menuTargetTranslations.get(cleanTarget);
+    }
+
+    private String translateCombatLevelTarget(
+            MenuEntry entry,
+            String originalTarget,
+            CombatLevelTarget combatLevelTarget
+    )
+    {
+        Map<String, String> specificTranslations = getTargetDictionary(entry);
+
+        String translatedName = specificTranslations.get(combatLevelTarget.getName());
+
+        if (translatedName == null)
+        {
+            translatedName = menuTargetTranslations.get(combatLevelTarget.getName());
+        }
+
+        if (translatedName == null)
+        {
+            return null;
+        }
+
+        return originalTarget
+                .replace(combatLevelTarget.getName(), translatedName)
+                .replace("level-", "nivel-")
+                .replace("Level-", "Nivel-");
+    }
+
+    private String findItemVariantTranslation(String cleanTarget)
+    {
+        if (!itemVariantNormalizer.hasVariant(cleanTarget))
+        {
+            return null;
+        }
+
+        String baseName = itemVariantNormalizer.getBaseName(cleanTarget);
+        String translatedBaseName = itemTranslations.get(baseName);
+
+        if (translatedBaseName == null)
+        {
+            return null;
+        }
+
+        return itemVariantNormalizer.buildTranslatedVariant(
+                translatedBaseName,
+                cleanTarget
+        );
     }
 
     private Map<String, String> getTargetDictionary(MenuEntry entry)
@@ -233,6 +309,7 @@ public class TranslationService
                 return menuTargetTranslations;
         }
     }
+
     private boolean isItemWidget(MenuEntry entry)
     {
         int groupId = widgetIdUtil.getGroupId(entry.getParam1());

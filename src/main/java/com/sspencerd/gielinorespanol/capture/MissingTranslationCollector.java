@@ -218,7 +218,7 @@ public class MissingTranslationCollector
             }
             if(data.widgets != null)
             {
-                missingItems.addAll(data.widgets);
+                missingWidgets.addAll(data.widgets);
             }
 
             if(data.unknown != null)
@@ -241,7 +241,7 @@ public class MissingTranslationCollector
                             + "|"
                             + menuEntry.getType()
                             + "|"
-                            + menuEntry.getIndentifier();
+                            + menuEntry.getIdentifier();
 
                     missingMenuEntryKeys.add(key);
                 }
