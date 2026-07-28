@@ -5,6 +5,7 @@ import com.sspencerd.gielinorespanol.util.CombatLevelTargetNormalizer;
 import com.sspencerd.gielinorespanol.util.ItemVariantNormalizer;
 import com.sspencerd.gielinorespanol.util.TextNormalizer;
 import com.sspencerd.gielinorespanol.util.WidgetIdUtil;
+import com.sspencerd.gielinorespanol.util.MenuOptionVariantNormalizer;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 
@@ -25,6 +26,7 @@ public class TranslationService
     private final CombatLevelTargetNormalizer combatLevelTargetNormalizer;
     private final ItemVariantNormalizer itemVariantNormalizer;
     private final WidgetIdUtil widgetIdUtil;
+    private final MenuOptionVariantNormalizer menuOptionVariantNormalizer;
 
     private final Map<String, String> menuOptionTranslations;
     private final Map<String, String> menuTargetTranslations;
@@ -39,13 +41,15 @@ public class TranslationService
             TranslationRepository translationRepository,
             CombatLevelTargetNormalizer combatLevelTargetNormalizer,
             WidgetIdUtil widgetIdUtil,
-            ItemVariantNormalizer itemVariantNormalizer
+            ItemVariantNormalizer itemVariantNormalizer,
+            MenuOptionVariantNormalizer menuOptionVariantNormalizer
     )
     {
         this.textNormalizer = textNormalizer;
         this.combatLevelTargetNormalizer = combatLevelTargetNormalizer;
         this.widgetIdUtil = widgetIdUtil;
         this.itemVariantNormalizer = itemVariantNormalizer;
+        this.menuOptionVariantNormalizer = menuOptionVariantNormalizer;
 
         this.menuOptionTranslations = translationRepository.loadTranslations(
                 "/translations/es/menu/options.json"
@@ -67,11 +71,18 @@ public class TranslationService
         );
     }
 
+
+
     public String translateMenuOption(String option)
     {
         if (option == null || option.isBlank())
         {
             return option;
+        }
+
+        if(menuOptionVariantNormalizer.hasDynamicOption(option))
+        {
+            return menuOptionVariantNormalizer.translateDynamicOption(option);
         }
 
         return menuOptionTranslations.getOrDefault(option, option);
@@ -132,7 +143,41 @@ public class TranslationService
             return true;
         }
 
+        if(menuOptionVariantNormalizer.hasDynamicOption(option))
+        {
+            return true;
+        }
+
         return menuOptionTranslations.containsKey(option);
+    }
+
+    public boolean isItemOrNpcTarget(MenuEntry entry){
+        if(entry == null)
+        {
+            return false;
+        }
+
+        Map<String , String> targetDictionary = getTargetDictionary(entry);
+        return targetDictionary == itemTranslations || targetDictionary == npcTranslations;
+    }
+
+    public boolean isObjectTarget(MenuEntry entry){
+        if(entry == null)
+        {
+            return false;
+        }
+        Map<String , String> targetDictionary = getTargetDictionary(entry);
+
+        return targetDictionary == objectTranslations;
+    }
+
+    public boolean isWidgetTarget(MenuEntry entry){
+        if(entry == null)
+        {
+            return false;
+        }
+        Map<String , String> targetDictionary = getTargetDictionary(entry);
+        return targetDictionary == widgetTranslations;
     }
 
     public boolean hasMenuTargetTranslation(MenuEntry entry)

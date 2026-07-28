@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 
-@Slf4j
 @Singleton
 public class MenuInspector {
     private static final Logger log = LoggerFactory.getLogger(MenuInspector.class);

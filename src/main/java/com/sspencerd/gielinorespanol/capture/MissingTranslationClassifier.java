@@ -80,7 +80,7 @@ public class MissingTranslationClassifier
     private MissingTranslationCategory classifyWidgetEntry(MenuEntry entry)
     {
         int groupId = widgetIdUtil.getGroupId(entry.getParam1());
-        log.info(
+        log.debug(
                 "Widget classify -> target={}, option={}, type={}, param1={}, groupId={}",
                 entry.getTarget(),
                 entry.getOption(),

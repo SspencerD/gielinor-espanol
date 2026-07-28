@@ -56,6 +56,23 @@ public class GielinorEspanolPlugin extends Plugin
 		String originalOption = entry.getOption();
 		String originalTarget = entry.getTarget();
 
+		boolean shouldTranslateTarget = config.translateMenuTargets();
+
+		if (shouldTranslateTarget && translationService.isItemOrNpcTarget(entry) && !config.translateItemsAndNpcs())
+		{
+			shouldTranslateTarget = false;
+		}
+
+		if (shouldTranslateTarget && translationService.isObjectTarget(entry) && !config.translateWorldObjects())
+		{
+			shouldTranslateTarget = false;
+		}
+
+		if (shouldTranslateTarget && translationService.isWidgetTarget(entry) && !config.translateWidgets())
+		{
+			shouldTranslateTarget = false;
+		}
+
 		if (config.menuInspectorEnabled())
 		{
 			menuInspector.inspect(entry);
@@ -77,6 +94,7 @@ public class GielinorEspanolPlugin extends Plugin
 
 		if (
 				config.captureMissingTranslations() &&
+						shouldTranslateTarget &&
 						!translationService.hasMenuTargetTranslation(entry)
 		)
 		{
@@ -85,6 +103,7 @@ public class GielinorEspanolPlugin extends Plugin
 					originalTarget,
 					entry
 			);
+
 			missingTranslationCollector.collectMenuEntry(
 					"menuTarget",
 					originalOption,
@@ -103,7 +122,7 @@ public class GielinorEspanolPlugin extends Plugin
 			}
 		}
 
-		if (config.translateMenuTargets())
+		if (shouldTranslateTarget)
 		{
 			String translatedTarget = translationService.translateMenuTarget(entry);
 

@@ -7,6 +7,7 @@ import com.sspencerd.gielinorespanol.model.MissingTranslationCategory;
 import com.sspencerd.gielinorespanol.util.TextNormalizer;
 import com.sspencerd.gielinorespanol.model.CombatLevelTarget;
 import com.sspencerd.gielinorespanol.util.CombatLevelTargetNormalizer;
+import com.sspencerd.gielinorespanol.util.ItemVariantNormalizer;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.MenuEntry;
 import net.runelite.client.RuneLite;
@@ -26,6 +27,7 @@ import java.util.Set;
 public class MissingTranslationCollector
 {
     private final CombatLevelTargetNormalizer combatLevelTargetNormalizer;
+    private final ItemVariantNormalizer itemVariantNormalizer;
 
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
@@ -56,12 +58,15 @@ public class MissingTranslationCollector
     public MissingTranslationCollector(
             TextNormalizer textNormalizer,
             MissingTranslationClassifier missingTranslationClassifier,
-            CombatLevelTargetNormalizer combatLevelTargetNormalizer
+            CombatLevelTargetNormalizer combatLevelTargetNormalizer,
+            ItemVariantNormalizer itemVariantNormalizer
     )
     {
         this.textNormalizer = textNormalizer;
         this.missingTranslationClassifier = missingTranslationClassifier;
         this.combatLevelTargetNormalizer = combatLevelTargetNormalizer;
+        this.itemVariantNormalizer = itemVariantNormalizer;
+
         loadExistingMissingTranslations();
 
         log.info("Missing translations will be saved at: {}", MISSING_FILE);
@@ -93,13 +98,14 @@ public class MissingTranslationCollector
         {
             return;
         }
-        CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
+        MissingTranslationCategory category = missingTranslationClassifier.classify(source,entry);
 
-        if(combatLevelTarget.hasCombatLevel()){
-            cleanTarget = combatLevelTarget.getName();
+        cleanTarget = normalizeMissingTarget(cleanTarget, category);
+
+        if(shouldSkipTargetCapture(source,entry.getOption(),cleanTarget,entry,category))
+        {
+            return;
         }
-
-        MissingTranslationCategory category =  missingTranslationClassifier.classify(source,entry);
 
         if (addMissingTargetToCategory(category,cleanTarget))
         {
@@ -126,12 +132,13 @@ public class MissingTranslationCollector
             cleanTarget = "";
         }
 
-        CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
+        MissingTranslationCategory category = missingTranslationClassifier.classify(source,entry);
+        cleanTarget = normalizeMissingTarget(cleanTarget, category);
 
-        if(combatLevelTarget.hasCombatLevel()){
-            cleanTarget = combatLevelTarget.getName();
+        if("menuTarget".equals(source) && shouldSkipTargetCapture(source,option,cleanTarget,entry,category))
+        {
+            return;
         }
-        MissingTranslationCategory category =  missingTranslationClassifier.classify(source,entry);
 
         String key = source
                 + "|"
@@ -160,6 +167,58 @@ public class MissingTranslationCollector
         ));
 
         save();
+    }
+
+    private boolean shouldSkipTargetCapture(
+            String source,
+            String option,
+            String cleanTarget,
+            MenuEntry entry,
+            MissingTranslationCategory category
+    )
+    {
+
+        if(cleanTarget == null || cleanTarget.isBlank())
+        {
+            return true;
+        }
+        if(isPureNumber(cleanTarget))
+        {
+            return true;
+        }
+
+        if(category != MissingTranslationCategory.WIDGET && category != MissingTranslationCategory.UNKNOWN)
+        {
+            return false;
+        }
+        if(option == null )
+        {
+            return false;
+        }
+        switch (option)
+        {
+            case "Message":
+            case "Delete":
+            case "Add friend":
+            case "Remove friend":
+            case "Add ignore":
+            case "Remove ignore":
+            case "Lookup":
+            case "Report":
+            case "Trade with":
+            case "Follow":
+            case "Req Assist":
+            case "DPS":
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private boolean isPureNumber(String text)
+    {
+        return text != null && text.matches("\\d+");
     }
 
     private boolean addMissingTargetToCategory(
@@ -288,5 +347,20 @@ public class MissingTranslationCollector
         private Set<String> widgets = new LinkedHashSet<>();
         private Set<String> unknown = new LinkedHashSet<>();
         private Set<MissingMenuEntry> menuEntries = new LinkedHashSet<>();
+    }
+
+    private String normalizeMissingTarget(String cleanTarget, MissingTranslationCategory category)
+    {
+        CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
+
+        if(combatLevelTarget.hasCombatLevel())
+        {
+            return combatLevelTarget.getName();
+        }
+        if( category == MissingTranslationCategory.ITEM && itemVariantNormalizer.hasVariant(cleanTarget))
+        {
+            return itemVariantNormalizer.getBaseName(cleanTarget);
+        }
+        return cleanTarget;
     }
 }

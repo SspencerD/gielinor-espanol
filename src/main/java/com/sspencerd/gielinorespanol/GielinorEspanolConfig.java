@@ -4,13 +4,13 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("example")
+@ConfigGroup("gielinorespanol")
 public interface GielinorEspanolConfig extends Config
 {
 	@ConfigItem(
-		keyName = "translateMenuOptions",
-		name = "Traducir opciones del menú",
-		description = "Traduce acciones como Use,Examine,Walk here, Cancel entre otras"
+			keyName = "translateMenuOptions",
+			name = "Traducir opciones del menú",
+			description = "Traduce acciones como Use, Examine, Walk here, Attack y Talk-to."
 	)
 	default boolean translateMenuOptions()
 	{
@@ -20,47 +20,60 @@ public interface GielinorEspanolConfig extends Config
 	@ConfigItem(
 			keyName = "translateMenuTargets",
 			name = "Traducir objetivos del menú",
-			description = "Traduce objetivos como Bank chest, Bank, Door , Banker, etc."
+			description = "Activa o desactiva la traducción de nombres de objetos, NPCs, items e interfaz."
 	)
 	default boolean translateMenuTargets()
 	{
 		return true;
 	}
+
 	@ConfigItem(
-			keyName = "menuInspectorEnabled",
-			name = "Inspector de menú",
-			description = "Muestra información técnica de las entradas del menú en la consola"
+			keyName = "translateWorldObjects",
+			name = "Traducir objetos del mundo",
+			description = "Traduce objetos del mapa como puertas, cofres, árboles, rocas y bancos."
 	)
-	default boolean menuInspectorEnabled()
-	{
-		return false;
-	}
-	@ConfigItem(
-			keyName = "captureMissingTranslations",
-			name = "(analitica) Capturar traducciones faltantes",
-			description = "Guarda opciones y objetivos del menú sin traducción en un archivo JSON local"
-	)
-	default boolean captureMissingTranslations()
+	default boolean translateWorldObjects()
 	{
 		return true;
 	}
 
 	@ConfigItem(
-			keyName = "translateHoverTooltip",
-			name = "Traducir tooltip hover",
-			description = "Muestra un tooltip traducido al pasar el mouse sobre acciones u objetos"
+			keyName = "translateItemsAndNpcs",
+			name = "Traducir nombres de NPCs e items",
+			description = "Si está desactivado, los nombres de NPCs e items se mantendrán en inglés para conservar compatibilidad con la wiki de OSRS."
 	)
-	default boolean enableTranslateItemsAndNpcs()
+	default boolean translateItemsAndNpcs()
 	{
 		return true;
 	}
+
 	@ConfigItem(
-			keyName = "translateItemsAndNpcs",
-			name = "Traducir los nombres de los npc e items",
-			description = "En esté caso si no prefieres traducir los items y npcs puedes dejarlo apagado"
+			keyName = "translateWidgets",
+			name = "Traducir interfaz y widgets",
+			description = "Traduce textos de interfaz como botones, pestañas, oraciones, hechizos y opciones de RuneLite."
 	)
-	default boolean translateHoverTooltip()
+	default boolean translateWidgets()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+			keyName = "captureMissingTranslations",
+			name = "Capturar traducciones faltantes",
+			description = "Guarda localmente textos del juego que aún no tienen traducción. No envía información a internet."
+	)
+	default boolean captureMissingTranslations()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			keyName = "menuInspectorEnabled",
+			name = "Inspector técnico de menú",
+			description = "Muestra información técnica del menú en la consola. Recomendado solo para desarrollo."
+	)
+	default boolean menuInspectorEnabled()
+	{
+		return false;
 	}
 }
