@@ -1,7 +1,7 @@
 package com.sspencerd.gielinorespanol.translation;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Singleton;
@@ -16,32 +16,39 @@ import java.util.Map;
 @Singleton
 public class TranslationRepository
 {
-    private static final Gson GSON = new Gson();
-    private static final Type MAP_TYPE = new TypeToken<Map<String, String>>() {}.getType();
+    private final Gson gson = new Gson();
 
     public Map<String, String> loadTranslations(String resourcePath)
     {
-        InputStream inputStream = getClass().getResourceAsStream(resourcePath);
 
-        if (inputStream == null)
+        try (InputStream inputStream = getClass().getResourceAsStream(resourcePath))
         {
-            log.warn("Translation resource not found: {}", resourcePath);
-            return Collections.emptyMap();
-        }
+            if (inputStream == null)
+            {
+                log.warn("Translation resource not found: {}", resourcePath);
+                return Collections.emptyMap();
+            }
 
-        try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-        {
-            Map<String, String> translations = GSON.fromJson(reader, MAP_TYPE);
-            if(translations == null){
+            Type type = new TypeToken<Map<String, String>>() {}.getType();
+
+            Map<String, String> translations = gson.fromJson(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8),
+                    type
+            );
+
+            if (translations == null)
+            {
                 log.warn("Translation resource is empty: {}", resourcePath);
                 return Collections.emptyMap();
             }
+
             log.info("Loaded {} translations from {}", translations.size(), resourcePath);
             return translations;
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            log.error("Failed to load translation resource: {}", resourcePath, exception);
+            System.out.println("FAILED TO LOAD: " + resourcePath);
+            ex.printStackTrace();
             return Collections.emptyMap();
         }
     }
