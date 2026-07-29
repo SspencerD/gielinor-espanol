@@ -3,8 +3,10 @@ package com.sspencerd.gielinorespanol;
 import com.sspencerd.gielinorespanol.capture.MissingTranslationCollector;
 import com.sspencerd.gielinorespanol.menu.MenuInspector;
 import com.sspencerd.gielinorespanol.translation.TranslationService;
+import com.sspencerd.gielinorespanol.widget.WidgetTextTranslator;
 
 import net.runelite.api.*;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.client.eventbus.Subscribe;
 import com.google.inject.Provides;
@@ -39,6 +41,9 @@ public class GielinorEspanolPlugin extends Plugin
 
 	@Inject
 	private MissingTranslationCollector missingTranslationCollector;
+
+	@Inject
+	private WidgetTextTranslator widgetTextTranslator;
 
 //	@Inject
 //	private OverlayManager overlayManager;
@@ -175,6 +180,17 @@ public class GielinorEspanolPlugin extends Plugin
 			menuInspector.inspect(entry);
 		}
     }
+
+	@Subscribe
+	public void onGameTick(GameTick event)
+	{
+		if(!config.translateWidgets())
+		{
+			return;
+		}
+
+		widgetTextTranslator.translateVisibleWidgets();
+	}
 
 	@Provides
     GielinorEspanolConfig provideConfig(ConfigManager configManager)

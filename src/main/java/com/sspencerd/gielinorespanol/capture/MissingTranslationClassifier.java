@@ -17,6 +17,7 @@ public class MissingTranslationClassifier
     private static final int INVENTORY_GROUP_ID = 149;
     private static final int DEPOSIT_BOX_GROUP_ID = 192;
     private static final int SHOP_GROUP_ID = 300;
+    private static final int SHOP_INVENTORY_GROUP_ID = 301;
     private static final int EQUIPMENT_GROUP_ID = 387;
 
     private final WidgetIdUtil widgetIdUtil;
@@ -95,6 +96,7 @@ public class MissingTranslationClassifier
             case INVENTORY_GROUP_ID:
             case DEPOSIT_BOX_GROUP_ID:
             case SHOP_GROUP_ID:
+            case SHOP_INVENTORY_GROUP_ID:
             case EQUIPMENT_GROUP_ID:
                 return MissingTranslationCategory.ITEM;
 

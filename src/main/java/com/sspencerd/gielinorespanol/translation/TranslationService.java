@@ -20,6 +20,7 @@ public class TranslationService
     private static final int INVENTORY_GROUP_ID = 149;
     private static final int DEPOSIT_BOX_GROUP_ID = 192;
     private static final int SHOP_GROUP_ID = 300;
+    private static final int SHOP_INVENTORY_GROUP_ID = 301;
     private static final int EQUIPMENT_GROUP_ID = 387;
 
     private final TextNormalizer textNormalizer;
@@ -80,12 +81,25 @@ public class TranslationService
             return option;
         }
 
+        String cleanOption = textNormalizer.removeColorTags(option);
+
+        String exactTranslation = menuOptionTranslations.get(cleanOption);
+
+        if(exactTranslation != null)
+        {
+            return textNormalizer.replacePreservingOriginalFormat(
+                    option,
+                    cleanOption,
+                    exactTranslation
+            );
+        }
+
         if(menuOptionVariantNormalizer.hasDynamicOption(option))
         {
             return menuOptionVariantNormalizer.translateDynamicOption(option);
         }
 
-        return menuOptionTranslations.getOrDefault(option, option);
+       return option;
     }
 
     public String translateMenuTarget(MenuEntry entry)
@@ -136,6 +150,27 @@ public class TranslationService
         );
     }
 
+    public String translateWidgetText(String text)
+    {
+        if(text == null || text.isBlank())
+        {
+            return text;
+        }
+        String cleanText = textNormalizer.removeColorTags(text);
+        String translatedText = widgetTranslations.get(cleanText);
+
+        if(translatedText == null)
+        {
+            return text;
+        }
+
+        return textNormalizer.replacePreservingOriginalFormat(
+                text,
+                cleanText,
+                translatedText
+        );
+    }
+
     public boolean hasMenuOptionTranslation(String option)
     {
         if (option == null || option.isBlank())
@@ -143,13 +178,12 @@ public class TranslationService
             return true;
         }
 
-        if(menuOptionVariantNormalizer.hasDynamicOption(option))
-        {
-            return true;
-        }
+        String cleanOption = textNormalizer.removeColorTags(option);
 
-        return menuOptionTranslations.containsKey(option);
+        return menuOptionTranslations.containsKey(cleanOption) ||
+                menuOptionVariantNormalizer.hasDynamicOption(cleanOption);
     }
+
 
     public boolean isItemOrNpcTarget(MenuEntry entry){
         if(entry == null)
@@ -365,6 +399,7 @@ public class TranslationService
             case INVENTORY_GROUP_ID:
             case DEPOSIT_BOX_GROUP_ID:
             case SHOP_GROUP_ID:
+            case SHOP_INVENTORY_GROUP_ID:
             case EQUIPMENT_GROUP_ID:
                 return true;
 

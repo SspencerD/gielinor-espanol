@@ -209,6 +209,12 @@ public class MissingTranslationCollector
             case "Follow":
             case "Req Assist":
             case "DPS":
+            case "Delete tag tab":
+            case "Rename tag tab":
+            case "Export tag tab":
+            case "Enable layout":
+            case "Change icon":
+            case "View tag tab":
                 return true;
 
             default:
