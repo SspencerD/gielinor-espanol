@@ -246,6 +246,8 @@ public class TranslationService
         return translatedOption + " " + translatedTarget;
     }
 
+
+
     private String findTargetTranslation(MenuEntry entry, String cleanTarget)
     {
         if (cleanTarget == null || cleanTarget.isBlank())
@@ -254,6 +256,7 @@ public class TranslationService
         }
 
         Map<String, String> specificTranslations = getTargetDictionary(entry);
+
 
         CombatLevelTarget combatLevelTarget = combatLevelTargetNormalizer.parse(cleanTarget);
 

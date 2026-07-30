@@ -7,21 +7,32 @@ public class TextNormalizer {
 
     public String removeColorTags(String text)
     {
-        if(text == null || text.isBlank()){
+        if (text == null || text.isBlank())
+        {
             return text;
         }
+
         return text
-                .replaceAll("<col=[0-9a-fA-F]+>", "")
-                .replace("</col>", "");
+                .replaceAll("<[^>]+>", "")
+                .replace('\u00A0', ' ')
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     public String replacePreservingOriginalFormat(String originalText, String cleanText, String translatedText)
     {
-        if(originalText == null || cleanText == null || translatedText == null )
+        if (originalText == null || cleanText == null || translatedText == null)
         {
             return originalText;
         }
 
-        return originalText.replace(cleanText,translatedText);
+        String directReplace = originalText.replace(cleanText, translatedText);
+
+        if (!directReplace.equals(originalText))
+        {
+            return directReplace;
+        }
+
+        return translatedText;
     }
 }

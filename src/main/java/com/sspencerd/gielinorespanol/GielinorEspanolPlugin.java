@@ -126,12 +126,11 @@ public class GielinorEspanolPlugin extends Plugin
 				entry.setOption(translatedOption);
 			}
 		}
-
 		if (shouldTranslateTarget)
 		{
 			String translatedTarget = translationService.translateMenuTarget(entry);
 
-			if (!originalTarget.equals(translatedTarget))
+			if (translatedTarget != null && !originalTarget.equals(translatedTarget))
 			{
 				entry.setTarget(translatedTarget);
 			}
@@ -168,18 +167,28 @@ public class GielinorEspanolPlugin extends Plugin
 		}
 	}
 
-    @Subscribe
-    public void onMenuOpened(MenuOpened event)
-    {
-		if(!config.menuInspectorEnabled())
+	@Subscribe
+	public void onMenuOpened(MenuOpened event)
+	{
+		MenuEntry[] entries = event.getMenuEntries();
+
+		for (MenuEntry entry : entries)
+		{
+			translateMenuEntry(entry);
+		}
+
+		event.setMenuEntries(entries);
+
+		if (!config.menuInspectorEnabled())
 		{
 			return;
 		}
-		for (MenuEntry entry : event.getMenuEntries())
+
+		for (MenuEntry entry : entries)
 		{
 			menuInspector.inspect(entry);
 		}
-    }
+	}
 
 	@Subscribe
 	public void onGameTick(GameTick event)
